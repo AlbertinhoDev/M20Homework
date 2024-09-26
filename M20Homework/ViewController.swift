@@ -24,10 +24,10 @@ class ViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        tableView.register(PersonTableViewCell.self, forCellReuseIdentifier: cellFirstNameAndSecondName)
         setupView()
         
-        tableView.register(PersonTableViewCell.self, forCellReuseIdentifier: cellFirstNameAndSecondName)
+//        clearCoreData()
         
         persistentContainer.loadPersistentStores { (persistentStoreDescription, error) in
             if let error = error {
@@ -41,9 +41,8 @@ class ViewController: UITableViewController {
                 }
             }
         }
-
     }
-
+    
     private func setupView() {
         view.backgroundColor = .white
         title = "Persons"
@@ -79,6 +78,18 @@ class ViewController: UITableViewController {
         navigationController?.pushViewController(addPersonViewController, animated: true)
     }
     
+    private func clearCoreData() {
+        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "PersonsEntity")
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+
+        do {
+            try context.execute(deleteRequest)
+        } catch {
+            print("Ошибка при очистке данных: \(error)")
+        }
+    }
+    
     //MARK: - TableView setting
     override func numberOfSections(in tableView: UITableView) -> Int {
         return fetchedResultsController.sections?.count ?? 10
@@ -95,7 +106,7 @@ class ViewController: UITableViewController {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: cellFirstNameAndSecondName, for: indexPath) as! PersonTableViewCell
         
-        cell.firstNameLabel.text = person.firstName
+        cell.firstNameSecondNameLabel.text = person.firstName! + " " + person.secondName!
         return cell
 
     }
@@ -113,11 +124,22 @@ class ViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let personViewController = PersonViewController()
+        let person = fetchedResultsController.object(at: indexPath)
+        personViewController.firstName = person.firstName ?? ""
+        personViewController.secondName = person.secondName ?? ""
+        personViewController.dateOfBirth = person.dateOfBirth ?? ""
+        personViewController.country = person.country ?? ""
+        
+        self.navigationController?.pushViewController(personViewController, animated: true)
+        tableView.deselectRow(at: indexPath, animated: true)
     }
 }
 
 //MARK: - CoreData setting
 extension ViewController: NSFetchedResultsControllerDelegate {
+    
+    
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<any NSFetchRequestResult>) {
         tableView.beginUpdates()
     }
@@ -132,9 +154,11 @@ extension ViewController: NSFetchedResultsControllerDelegate {
             }
         case .update:
             if let indexPath = indexPath {
-                let recipes = fetchedResultsController.object(at: indexPath)
+                let person = fetchedResultsController.object(at: indexPath)
                 let cell = tableView.cellForRow(at: indexPath)
-                cell!.textLabel?.text = recipes.firstName
+                
+//                let cell = PersonTableViewCell()
+//                cell.firstNameSecondNameLabel.text = person.firstName! + " " + person.secondName!
             }
         case .move:
             if let indexPath = indexPath {
@@ -153,7 +177,7 @@ extension ViewController: NSFetchedResultsControllerDelegate {
 
 //MARK: - Cell setting
 class PersonTableViewCell: UITableViewCell {
-    let firstNameLabel: UILabel = {
+    let firstNameSecondNameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont.systemFont(ofSize: 16)
@@ -171,12 +195,12 @@ class PersonTableViewCell: UITableViewCell {
     }
 
     private func setupView() {
-        addSubview(firstNameLabel)
+        addSubview(firstNameSecondNameLabel)
 
         NSLayoutConstraint.activate([
-            firstNameLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
-            firstNameLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            firstNameLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16)
+            firstNameSecondNameLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+            firstNameSecondNameLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            firstNameSecondNameLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16)
         ])
     }
 }

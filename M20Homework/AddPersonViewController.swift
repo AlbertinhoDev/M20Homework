@@ -1,7 +1,8 @@
 //View добавления новой персоны
 import UIKit
+import CoreData
 
-class AddPersonViewController: UIViewController {
+class AddPersonViewController: UIViewController, NSFetchedResultsControllerDelegate {
 
     private lazy var stackView: UIStackView = {
         let stackView = UIStackView()
@@ -54,11 +55,13 @@ class AddPersonViewController: UIViewController {
     
     private lazy var firstNameTextField = UITextField()
     private lazy var secondNameTextField = UITextField()
+    
     private lazy var datePicker: UIDatePicker = {
         let picker = UIDatePicker()
         picker.datePickerMode = .date
         return picker
     }()
+    
     private lazy var countryTextField = UITextField()
     
     private lazy var saveButton: UIButton = {
@@ -71,11 +74,12 @@ class AddPersonViewController: UIViewController {
         button.isHidden = true
         return button
     }()
-
-    var personsEnity: PersonsEntity?
+    
+    private let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         setupView()
         setupConstraints()
         firstNameTextField.delegate = self
@@ -106,18 +110,25 @@ class AddPersonViewController: UIViewController {
         saveButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
     }
     
+    
     @objc func saveData() {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd.MM.yyyy"
         let dateOfBirthDate = datePicker.date
         let dateOfBirthString = dateFormatter.string(from: dateOfBirthDate)
         
-        personsEnity?.firstName = firstNameTextField.text
-        personsEnity?.secondName = secondNameTextField.text
-        personsEnity?.dateOfBirth = dateOfBirthString
-        personsEnity?.country = countryTextField.text
-
-        try? personsEnity?.managedObjectContext?.save()
+        let newEnity = PersonsEntity(context: context)
+        
+        newEnity.firstName =  firstNameTextField.text!
+        newEnity.secondName =  secondNameTextField.text!
+        newEnity.dateOfBirth =  dateOfBirthString
+        newEnity.country =  countryTextField.text!
+        
+        do {
+            try context.save()
+        } catch {
+            print("Ошибка сохраения: \(error.localizedDescription)")
+        }
         
         navigationController?.popViewController(animated: true)
     }
