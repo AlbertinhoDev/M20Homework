@@ -35,7 +35,6 @@ class PersonViewController: UIViewController {
         return name
     }()
     
-    
     private lazy var datePicker: UIDatePicker = {
         let picker = UIDatePicker()
         if dateOfBirth != "" {
@@ -65,7 +64,6 @@ class PersonViewController: UIViewController {
         return button
     }()
     
-    private let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -84,7 +82,6 @@ class PersonViewController: UIViewController {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         stackView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
-        
         saveButton.translatesAutoresizingMaskIntoConstraints = false
         saveButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
     }
@@ -94,6 +91,16 @@ class PersonViewController: UIViewController {
         dateFormatter.dateFormat = "dd.MM.yyyy"
         let dateOfBirthDate = datePicker.date
         let dateOfBirthString = dateFormatter.string(from: dateOfBirthDate)
+        
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {return}
+        let context  = appDelegate.persistentContainer.viewContext
+        
+        let newEnity = PersonsEntity(context: context)
+        
+        newEnity.firstName =  firstNameTextField.text!
+        newEnity.secondName =  secondNameTextField.text!
+        newEnity.dateOfBirth =  dateOfBirthString
+        newEnity.country =  countryTextField.text!
         
         do {
             try context.save()

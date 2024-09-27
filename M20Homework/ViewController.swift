@@ -106,7 +106,7 @@ class ViewController: UITableViewController {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: cellFirstNameAndSecondName, for: indexPath) as! PersonTableViewCell
         
-        cell.firstNameSecondNameLabel.text = person.firstName! + " " + person.secondName!
+        cell.firstNameSecondNameLabel.text = (person.firstName ?? "") + " " + (person.secondName ?? "")
         return cell
 
     }
@@ -154,8 +154,9 @@ extension ViewController: NSFetchedResultsControllerDelegate {
             }
         case .update:
             if let indexPath = indexPath {
-                let person = fetchedResultsController.object(at: indexPath)
-                let cell = tableView.cellForRow(at: indexPath)
+//                let person = fetchedResultsController.object(at: indexPath)
+//                let cell = tableView.cellForRow(at: indexPath)
+                tableView.reloadRows(at: [indexPath], with: .automatic)
                 
 //                let cell = PersonTableViewCell()
 //                cell.firstNameSecondNameLabel.text = person.firstName! + " " + person.secondName!
