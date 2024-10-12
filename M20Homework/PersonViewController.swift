@@ -1,7 +1,10 @@
 //View описания выбранной персоны
 import UIKit
+import CoreData
 
 class PersonViewController: UIViewController {
+    
+    weak var delegate: DataUpdateDelegate?
     
     var firstName = ""
     var secondName = ""
@@ -17,7 +20,7 @@ class PersonViewController: UIViewController {
         stackView.addArrangedSubview(secondNameTextField)
         stackView.addArrangedSubview(datePicker)
         stackView.addArrangedSubview(countryTextField)
-        stackView.addArrangedSubview(saveButton)
+        stackView.addArrangedSubview(updateButton)
         return stackView
     }()
     
@@ -54,9 +57,9 @@ class PersonViewController: UIViewController {
         return country
     }()
     
-    private lazy var saveButton: UIButton = {
+    private lazy var updateButton: UIButton = {
         let button = UIButton()
-        button.setTitle("Save", for: .normal)
+        button.setTitle("Update", for: .normal)
         button.backgroundColor = .white
         button.setTitleColor(.black, for: .normal)
         button.layer.cornerRadius = 5
@@ -64,13 +67,14 @@ class PersonViewController: UIViewController {
         return button
     }()
     
+    private lazy var changeName = secondNameTextField.text
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()
         setupConstraints()
-               
-        saveButton.addTarget(self, action: #selector(saveData), for: .touchUpInside)
+        
+        updateButton.addTarget(self, action: #selector(updateData), for: .touchUpInside)
     }
     
     private func setupView() {
@@ -82,11 +86,11 @@ class PersonViewController: UIViewController {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         stackView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
-        saveButton.translatesAutoresizingMaskIntoConstraints = false
-        saveButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        updateButton.translatesAutoresizingMaskIntoConstraints = false
+        updateButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
     }
     
-    @objc func saveData() {
+    @objc func updateData() {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd.MM.yyyy"
         let dateOfBirthDate = datePicker.date
@@ -95,18 +99,25 @@ class PersonViewController: UIViewController {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {return}
         let context  = appDelegate.persistentContainer.viewContext
         
-        let newEnity = PersonsEntity(context: context)
-        
-        newEnity.firstNameModel =  firstNameTextField.text!
-        newEnity.secondNameModel =  secondNameTextField.text!
-        newEnity.dateOfBirthModel =  dateOfBirthString
-        newEnity.countryModel =  countryTextField.text!
+        let fetchRequest: NSFetchRequest<PersonsEntity> = PersonsEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "secondNameModel == %@", changeName!)
         
         do {
-            try context.save()
-        } catch {
-            print("Ошибка сохраения: \(error.localizedDescription)")
-        }
+            let results = try context.fetch(fetchRequest)
+            if let personToUpdate = results.first {
+                personToUpdate.firstNameModel = firstNameTextField.text!
+                personToUpdate.secondNameModel = secondNameTextField.text!
+                personToUpdate.dateOfBirthModel = dateOfBirthString
+                personToUpdate.countryModel = countryTextField.text!
+                try context.save()
+                delegate?.didUpdateData()
+            } else {
+                print("Персонаж с фамилией \(changeName) не найден")
+            }
+          } catch {
+              print("Ошибка при обновлении данных: \(error)")
+          }
+
         navigationController?.popViewController(animated: true)
     }
 }

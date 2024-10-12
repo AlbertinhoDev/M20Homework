@@ -2,7 +2,13 @@
 import UIKit
 import CoreData
 
-class ViewController: UITableViewController {
+
+protocol DataUpdateDelegate: AnyObject {
+    func didUpdateData()
+}
+
+
+class ViewController: UITableViewController, DataUpdateDelegate {
     //MARK: - UserDefaults
     enum TypeSort {
         static var sortType = true
@@ -61,11 +67,11 @@ class ViewController: UITableViewController {
     private func changeSort() -> String {
         var title = ""
         if TypeSort.sortType == true {
-            title = "Filter \u{2191}"
-            fetchedResultsController.fetchRequest.sortDescriptors = [NSSortDescriptor(key: "secondNameModel", ascending: true)]
+            title = "Sort \u{2191}"
+            sortData(true)
         }else {
-            title = "Filter \u{2193}"
-            fetchedResultsController.fetchRequest.sortDescriptors = [NSSortDescriptor(key: "secondNameModel", ascending: false)]
+            title = "Sort \u{2193}"
+            sortData(false)
         }
         return title
     }
@@ -73,6 +79,17 @@ class ViewController: UITableViewController {
     @objc private func filterNames() {
         TypeSort.sortType = !TypeSort.sortType
         setupNavigationController()
+    }
+    
+    @objc private func sortData(_ sort: Bool) {
+        let sortDescriptor = NSSortDescriptor(key: "firstNameModel", ascending: sort)
+        fetchedResultsController.fetchRequest.sortDescriptors = [sortDescriptor]
+        do {
+            try fetchedResultsController.performFetch()
+            tableView.reloadData()
+        } catch {
+            print("Ошибка при сортировке: \(error.localizedDescription)")
+        }
     }
     
     @objc private func addPerson() {
@@ -92,6 +109,17 @@ class ViewController: UITableViewController {
         }
     }
     
+    func didUpdateData() {
+        tableView.reloadData() // Перезагружаем таблицу
+    }
+
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let secondVC = segue.destination as? PersonViewController {
+            secondVC.delegate = self // Устанавливаем делегат
+        }
+    }
+    
+    
     //MARK: - TableView setting
     override func numberOfSections(in tableView: UITableView) -> Int {
         return fetchedResultsController.sections?.count ?? 10
@@ -109,7 +137,7 @@ class ViewController: UITableViewController {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: cellFirstNameAndSecondName, for: indexPath) as! PersonTableViewCell
         
-        cell.firstNameLabel.text = person.firstNameModel
+        cell.firstNameLabel.text = "\(person.firstNameModel!) \(person.secondNameModel!)"
         return cell
 
     }
@@ -153,19 +181,19 @@ extension ViewController: NSFetchedResultsControllerDelegate {
             if let indexPath = newIndexPath {
                 tableView.insertRows(at: [indexPath], with: .automatic)
             }
-        case .update:
-            if let indexPath = indexPath {
-                let recipes = fetchedResultsController.object(at: indexPath)
-                let cell = tableView.cellForRow(at: indexPath)
-                cell!.textLabel?.text = recipes.firstNameModel
-            }
-        case .move:
-            if let indexPath = indexPath {
-                tableView.deleteRows(at: [indexPath], with: .automatic)
-            }
-            if let newIndexPath = newIndexPath {
-                tableView.insertRows(at: [newIndexPath], with: .automatic)
-            }
+//        case .update:
+//            if let indexPath = indexPath {
+//                let recipes = fetchedResultsController.object(at: indexPath)
+//                let cell = tableView.cellForRow(at: indexPath)
+//                cell!.textLabel?.text = recipes.firstNameModel
+//            }
+//        case .move:
+//            if let indexPath = indexPath {
+//                tableView.deleteRows(at: [indexPath], with: .automatic)
+//            }
+//            if let newIndexPath = newIndexPath {
+//                tableView.insertRows(at: [newIndexPath], with: .automatic)
+//            }
         case .delete:
             if let indexPath = indexPath {
                 tableView.deleteRows(at: [indexPath], with: .automatic)
@@ -190,6 +218,9 @@ extension ViewController {
         } catch {
             print("Ошибка загрузки данных: \(error.localizedDescription)")
         }
+        
+        
+        
     }
 }
 
