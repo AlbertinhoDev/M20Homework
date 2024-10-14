@@ -3,12 +3,7 @@ import UIKit
 import CoreData
 
 
-protocol DataUpdateDelegate: AnyObject {
-    func didUpdateData()
-}
-
-
-class ViewController: UITableViewController, DataUpdateDelegate {
+class ViewController: UITableViewController {
     //MARK: - UserDefaults
     enum TypeSort {
         static var sortType = true
@@ -27,6 +22,7 @@ class ViewController: UITableViewController, DataUpdateDelegate {
     //MARK: - Main
 
     let cellFirstNameAndSecondName = "cellFirstNameAndSecondName"
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -94,6 +90,8 @@ class ViewController: UITableViewController, DataUpdateDelegate {
     
     @objc private func addPerson() {
         let addPersonViewController = AddPersonViewController()
+        addPersonViewController.id = Int16((fetchedResultsController.fetchedObjects?.count ?? 0) + 1)
+        print("Create \(addPersonViewController.id)")
         navigationController?.pushViewController(addPersonViewController, animated: true)
     }
     
@@ -108,17 +106,7 @@ class ViewController: UITableViewController, DataUpdateDelegate {
             print("Ошибка при очистке данных: \(error)")
         }
     }
-    
-    func didUpdateData() {
-        tableView.reloadData() // Перезагружаем таблицу
-    }
-
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let secondVC = segue.destination as? PersonViewController {
-            secondVC.delegate = self // Устанавливаем делегат
-        }
-    }
-    
+        
     
     //MARK: - TableView setting
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -161,6 +149,9 @@ class ViewController: UITableViewController, DataUpdateDelegate {
         personViewController.secondName = person.secondNameModel ?? ""
         personViewController.dateOfBirth = person.dateOfBirthModel ?? ""
         personViewController.country = person.countryModel ?? ""
+        personViewController.idChange = person.idModel
+        
+        print("Will change \(personViewController.idChange!)")
         
         self.navigationController?.pushViewController(personViewController, animated: true)
         tableView.deselectRow(at: indexPath, animated: true)
@@ -205,23 +196,29 @@ extension ViewController: NSFetchedResultsControllerDelegate {
 }
 
 // MARK: - Additional Methods
-extension ViewController {
+extension ViewController: PersonViewControllerDelegate {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
         
         // Попытка перезагрузить данные каждый раз, когда экран появляется
         do {
             try fetchedResultsController.performFetch()
             tableView.reloadData()
+            didUpdateData()
             print("Данные успешно загружены: \(fetchedResultsController.fetchedObjects?.count ?? 0) записей")
         } catch {
             print("Ошибка загрузки данных: \(error.localizedDescription)")
         }
-        
-        
-        
     }
+    
+    func didUpdateData() {
+        print("Reload table")
+        tableView.reloadData()
+    }
+    
+    
 }
 
 //MARK: - Cell setting

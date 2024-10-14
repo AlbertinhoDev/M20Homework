@@ -4,6 +4,7 @@
         <attribute name="countryModel" optional="YES" attributeType="String"/>
         <attribute name="dateOfBirthModel" optional="YES" attributeType="String"/>
         <attribute name="firstNameModel" optional="YES" attributeType="String"/>
+        <attribute name="idModel" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="secondNameModel" optional="YES" attributeType="String"/>
     </entity>
 </model>

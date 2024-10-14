@@ -2,14 +2,19 @@
 import UIKit
 import CoreData
 
+protocol PersonViewControllerDelegate: AnyObject {
+    func didUpdateData()
+}
+
 class PersonViewController: UIViewController {
-    
-    weak var delegate: DataUpdateDelegate?
     
     var firstName = ""
     var secondName = ""
     var dateOfBirth = ""
     var country = ""
+    var idChange: Int16?
+    
+    weak var delegate: PersonViewControllerDelegate?
     
     private lazy var stackView: UIStackView = {
         let stackView = UIStackView()
@@ -67,8 +72,6 @@ class PersonViewController: UIViewController {
         return button
     }()
     
-    private lazy var changeName = secondNameTextField.text
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()
@@ -100,7 +103,11 @@ class PersonViewController: UIViewController {
         let context  = appDelegate.persistentContainer.viewContext
         
         let fetchRequest: NSFetchRequest<PersonsEntity> = PersonsEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "secondNameModel == %@", changeName!)
+        
+        print("Changed \(idChange!)")
+        
+        fetchRequest.predicate = NSPredicate(format: "idModel == %d", idChange!)
+
         
         do {
             let results = try context.fetch(fetchRequest)
@@ -112,12 +119,14 @@ class PersonViewController: UIViewController {
                 try context.save()
                 delegate?.didUpdateData()
             } else {
-                print("Персонаж с фамилией \(changeName) не найден")
+                print("Персонаж с фамилией не найден")
             }
           } catch {
               print("Ошибка при обновлении данных: \(error)")
           }
-
+        
+        
+        
         navigationController?.popViewController(animated: true)
     }
 }

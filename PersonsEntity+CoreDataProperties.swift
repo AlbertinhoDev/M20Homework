@@ -12,6 +12,7 @@ extension PersonsEntity {
     @NSManaged public var dateOfBirthModel: String?
     @NSManaged public var firstNameModel: String?
     @NSManaged public var secondNameModel: String?
+    @NSManaged public var idModel: Int16
 
 }
 

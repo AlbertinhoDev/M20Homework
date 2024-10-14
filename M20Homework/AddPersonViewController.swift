@@ -73,6 +73,7 @@ class AddPersonViewController: UIViewController {
     }()
     
     var personsEnity: PersonsEntity?
+    var id: Int16?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -119,12 +120,16 @@ class AddPersonViewController: UIViewController {
         
         // Создание нового объекта PersonsEntity
         let newPerson = PersonsEntity(context: context)
-
+        
+        //print(id)
+        
         // Заполнение данных в новый объект
         newPerson.firstNameModel = firstNameTextField.text
         newPerson.secondNameModel = secondNameTextField.text
         newPerson.dateOfBirthModel = dateOfBirthString
         newPerson.countryModel = countryTextField.text
+        print("Taken \(id)")
+        newPerson.idModel = id ?? 0
 
         // Сохранение данных с обработкой ошибок
         do {
