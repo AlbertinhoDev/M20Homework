@@ -5,15 +5,22 @@ import CoreData
 
 class ViewController: UITableViewController {
     //MARK: - UserDefaults
-    enum TypeSort {
-        static var sortType = true
+    enum Keys {
+        static var sortType = "sortType"
     }
+    
+    let defaults = UserDefaults.standard
+    
+    var sortBy: Bool?
+    
     //MARK: - CoreData
     private let persistentContainer = NSPersistentContainer(name: "MyDataModel")
     
     private lazy var fetchedResultsController: NSFetchedResultsController<PersonsEntity> = {
         let fetchRequest = PersonsEntity.fetchRequest()
-        let sortDescriptor = NSSortDescriptor(key: "secondNameModel", ascending: false)
+        sortBy = UserDefaults.standard.bool(forKey: Keys.sortType)
+        print(sortBy)
+        let sortDescriptor = NSSortDescriptor(key: "secondNameModel", ascending: sortBy!)
         fetchRequest.sortDescriptors = [sortDescriptor]
         let fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.persistentContainer.viewContext, sectionNameKeyPath: nil, cacheName: nil)
         fetchedResultsController.delegate = self
@@ -44,7 +51,7 @@ class ViewController: UITableViewController {
             }
         }
     }
-    
+        
     private func setupView() {
         view.backgroundColor = .white
         title = "Persons"
@@ -56,13 +63,14 @@ class ViewController: UITableViewController {
         space.width = 10
         let add = UIBarButtonItem(title: "Add +", style: .plain, target: self, action: #selector(addPerson))
         let titleItem = changeSort()
-        let filter =  UIBarButtonItem(title: titleItem, style: .plain, target: self, action: #selector(filterNames))
-        navigationItem.rightBarButtonItems = [add, space, filter]
+        let sort =  UIBarButtonItem(title: titleItem, style: .plain, target: self, action: #selector(sortNames))
+        navigationItem.rightBarButtonItems = [add, space, sort]
     }
     
     private func changeSort() -> String {
         var title = ""
-        if TypeSort.sortType == true {
+        sortBy = UserDefaults.standard.bool(forKey: Keys.sortType)
+        if sortBy == true {
             title = "Sort \u{2191}"
             sortData(true)
         }else {
@@ -72,8 +80,10 @@ class ViewController: UITableViewController {
         return title
     }
     
-    @objc private func filterNames() {
-        TypeSort.sortType = !TypeSort.sortType
+    @objc private func sortNames() {
+        sortBy = !sortBy!
+        defaults.set(sortBy, forKey: "sortType")
+        print("saved UearDefaults as \(defaults.bool(forKey: "sortType"))")
         setupNavigationController()
     }
     
