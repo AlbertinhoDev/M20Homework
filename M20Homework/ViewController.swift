@@ -14,9 +14,10 @@ class ViewController: UITableViewController {
     var sortBy: Bool?
     
     //MARK: - CoreData
-    private let persistentContainer = NSPersistentContainer(name: "MyDataModel")
-    
+    private let persistentContainer = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
+        
     private lazy var fetchedResultsController: NSFetchedResultsController<PersonsEntity> = {
+        
         let fetchRequest = PersonsEntity.fetchRequest()
         sortBy = UserDefaults.standard.bool(forKey: Keys.sortType)
         print(sortBy)
@@ -105,17 +106,17 @@ class ViewController: UITableViewController {
         navigationController?.pushViewController(addPersonViewController, animated: true)
     }
     
-    private func clearCoreData() {
-        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "PersonsEntity")
-        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-
-        do {
-            try context.execute(deleteRequest)
-        } catch {
-            print("Ошибка при очистке данных: \(error)")
-        }
-    }
+//    private func clearCoreData() {
+//        let context = persistentContainer.viewContext
+//        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "PersonsEntity")
+//        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+//
+//        do {
+//            try context.execute(deleteRequest)
+//        } catch {
+//            print("Ошибка при очистке данных: \(error)")
+//        }
+//    }
         
     
     //MARK: - TableView setting
@@ -182,12 +183,12 @@ extension ViewController: NSFetchedResultsControllerDelegate {
             if let indexPath = newIndexPath {
                 tableView.insertRows(at: [indexPath], with: .automatic)
             }
-//        case .update:
-//            if let indexPath = indexPath {
-//                let recipes = fetchedResultsController.object(at: indexPath)
-//                let cell = tableView.cellForRow(at: indexPath)
-//                cell!.textLabel?.text = recipes.firstNameModel
-//            }
+        case .update:
+            if let indexPath = indexPath {
+                let recipes = fetchedResultsController.object(at: indexPath)
+                let cell = tableView.cellForRow(at: indexPath)
+                //cell!.textLabel?.text = recipes.firstNameModel
+            }
 //        case .move:
 //            if let indexPath = indexPath {
 //                tableView.deleteRows(at: [indexPath], with: .automatic)
