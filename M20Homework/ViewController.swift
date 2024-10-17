@@ -39,18 +39,20 @@ class ViewController: UITableViewController {
         
         tableView.register(PersonTableViewCell.self, forCellReuseIdentifier: cellFirstNameAndSecondName)
 
-        persistentContainer.loadPersistentStores { (persistentStoreDescription, error) in
-            if let error = error {
-                print("Unable to Load Persistent Store")
-                print("\(error), \(error.localizedDescription)")
-            } else {
-                do {
-                    try self.fetchedResultsController.performFetch()
-                } catch {
-                    print(error)
-                }
-            }
-        }
+//        persistentContainer.loadPersistentStores { (persistentStoreDescription, error) in
+//            if let error = error {
+//                print("Unable to Load Persistent Store")
+//                print("\(error), \(error.localizedDescription)")
+//            } else {
+//                do {
+//                    try self.fetchedResultsController.performFetch()
+//                } catch {
+//                    print(error)
+//                }
+//            }
+//        }
+        
+        
     }
         
     private func setupView() {
@@ -207,30 +209,29 @@ extension ViewController: NSFetchedResultsControllerDelegate {
 }
 
 // MARK: - Additional Methods
-extension ViewController: PersonViewControllerDelegate {
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        
-        // Попытка перезагрузить данные каждый раз, когда экран появляется
-        do {
-            try fetchedResultsController.performFetch()
-            tableView.reloadData()
-            didUpdateData()
-            print("Данные успешно загружены: \(fetchedResultsController.fetchedObjects?.count ?? 0) записей")
-        } catch {
-            print("Ошибка загрузки данных: \(error.localizedDescription)")
-        }
-    }
-    
-    func didUpdateData() {
-        print("Reload table")
-        tableView.reloadData()
-    }
-    
-    
-}
+//extension ViewController: PersonViewControllerDelegate {
+//    
+//    override func viewWillAppear(_ animated: Bool) {
+//        super.viewWillAppear(animated)
+//        
+//        
+//        // Попытка перезагрузить данные каждый раз, когда экран появляется
+//        do {
+//            try fetchedResultsController.performFetch()
+//            tableView.reloadData()
+//            didUpdateData()
+//            print("Данные успешно загружены: \(fetchedResultsController.fetchedObjects?.count ?? 0) записей")
+//        } catch {
+//            print("Ошибка загрузки данных: \(error.localizedDescription)")
+//        }
+//    }
+//    
+//    func didUpdateData() {
+//        print("Reload table")
+//    }
+//    
+//    
+//}
 
 //MARK: - Cell setting
 class PersonTableViewCell: UITableViewCell {
